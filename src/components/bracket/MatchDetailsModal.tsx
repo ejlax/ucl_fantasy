@@ -23,7 +23,7 @@ export function MatchDetailsModal({
 }: MatchDetailsModalProps) {
   if (!isOpen) return null;
 
-  const isCompleted = match.status === 'COMPLETED';
+  const isCompleted = match.is_completed;
   const isFinal = match.round === 'FINAL';
 
   // Calculate aggregate scores if both legs exist
@@ -32,7 +32,7 @@ export function MatchDetailsModal({
   let awayAggregate = 0;
   let winner = null;
 
-  if (hasAggregate && isCompleted && secondLegMatch.status === 'COMPLETED') {
+  if (hasAggregate && isCompleted && secondLegMatch.is_completed) {
     homeAggregate = (match.home_score || 0) + (secondLegMatch.away_score || 0);
     awayAggregate = (match.away_score || 0) + (secondLegMatch.home_score || 0);
 
@@ -67,7 +67,7 @@ export function MatchDetailsModal({
               <span className="font-medium text-gray-900">{m.home_team}</span>
             </div>
             <span className="text-lg font-bold text-gray-900">
-              {m.status === 'COMPLETED' ? m.home_score : '-'}
+              {m.is_completed ? m.home_score : '-'}
             </span>
           </div>
 
@@ -75,7 +75,7 @@ export function MatchDetailsModal({
           <div className="flex items-center justify-between rounded bg-white px-3 py-2">
             <span className="ml-6 font-medium text-gray-900">{m.away_team}</span>
             <span className="text-lg font-bold text-gray-900">
-              {m.status === 'COMPLETED' ? m.away_score : '-'}
+              {m.is_completed ? m.away_score : '-'}
             </span>
           </div>
         </div>
@@ -123,7 +123,7 @@ export function MatchDetailsModal({
           {/* Content */}
           <div className="space-y-6 p-6">
             {/* Aggregate Score (if applicable) */}
-            {hasAggregate && isCompleted && secondLegMatch.status === 'COMPLETED' && (
+            {hasAggregate && isCompleted && secondLegMatch.is_completed && (
               <div className="bg-primary-50 border-primary-200 rounded-lg border-2 p-4">
                 <div className="mb-3 text-center">
                   <span className="text-primary-700 text-sm font-semibold tracking-wide uppercase">
