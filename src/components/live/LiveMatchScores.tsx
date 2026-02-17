@@ -58,7 +58,13 @@ export function LiveMatchScores({ round, showOnlyLive = false }: LiveMatchScores
       {/* Match Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {matches.map((match) => {
-          const isLive = !match.is_completed && match.home_score !== null;
+          // A match is live if it's in the ESPN live matches list
+          const isLive = espnLiveMatches?.some(
+            (espnMatch) =>
+              espnMatch.homeTeam.name === match.home_team &&
+              espnMatch.awayTeam.name === match.away_team &&
+              espnMatch.status.inProgress
+          ) || false;
           const homeLogo = getTeamLogo(match.home_team);
           const awayLogo = getTeamLogo(match.away_team);
 
