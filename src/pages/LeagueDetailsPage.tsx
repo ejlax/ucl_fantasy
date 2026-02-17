@@ -30,6 +30,7 @@ export function LeagueDetailsPage() {
   const deleteLeague = useDeleteLeague();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   if (isLoading) {
     return (
@@ -64,6 +65,13 @@ export function LeagueDetailsPage() {
     await navigator.clipboard.writeText(league.invite_code);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleCopyJoinLink = async () => {
+    const joinLink = `${window.location.origin}/join/${league.invite_code}`;
+    await navigator.clipboard.writeText(joinLink);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const handleLeaveLeague = async () => {
@@ -150,23 +158,47 @@ export function LeagueDetailsPage() {
 
       {/* Invite Code Card */}
       <div className="bg-primary-50 border-primary-200 mb-8 rounded-lg border p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-secondary-900 text-sm font-semibold">Invite Code</h3>
-            <p className="text-primary-600 mt-1 font-mono text-2xl font-bold">
-              {league.invite_code}
-            </p>
-            <p className="text-secondary-600 mt-1 text-xs">
-              Share this code with friends to invite them
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-secondary-900 text-sm font-semibold">Invite Code</h3>
+              <p className="text-primary-600 mt-1 font-mono text-2xl font-bold">
+                {league.invite_code}
+              </p>
+              <p className="text-secondary-600 mt-1 text-xs">
+                Share this code with friends to invite them
+              </p>
+            </div>
+            <button
+              onClick={handleCopyInviteCode}
+              className="bg-primary-600 hover:bg-primary-700 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors"
+            >
+              {copiedCode ? <CheckCircle size={18} /> : <Copy size={18} />}
+              <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+            </button>
           </div>
-          <button
-            onClick={handleCopyInviteCode}
-            className="bg-primary-600 hover:bg-primary-700 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors"
-          >
-            {copiedCode ? <CheckCircle size={18} /> : <Copy size={18} />}
-            <span>{copiedCode ? 'Copied!' : 'Copy'}</span>
-          </button>
+
+          {/* Join Link */}
+          <div className="border-t border-primary-200 pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0 mr-4">
+                <h3 className="text-secondary-900 text-sm font-semibold">Share Link</h3>
+                <p className="text-secondary-600 mt-1 text-sm font-mono truncate">
+                  {window.location.origin}/join/{league.invite_code}
+                </p>
+                <p className="text-secondary-600 mt-1 text-xs">
+                  Direct link for easy sharing - new users can sign up and join automatically
+                </p>
+              </div>
+              <button
+                onClick={handleCopyJoinLink}
+                className="bg-secondary-600 hover:bg-secondary-700 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors flex-shrink-0"
+              >
+                {copiedLink ? <CheckCircle size={18} /> : <Copy size={18} />}
+                <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
