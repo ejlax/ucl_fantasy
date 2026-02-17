@@ -69,6 +69,65 @@ export const predictionService = {
   },
 
   /**
+   * Admin override: Create or update a prediction even after match has started
+   * Only league owners/commissioners should be able to call this
+   */
+  async savePredictionAdminOverride(
+    leagueId: string,
+    userId: string,
+    matchId: string,
+    predictedHomeScore: number,
+    predictedAwayScore: number
+  ): Promise<Prediction> {
+    // Verify match exists
+    const match = await matchService.getMatchById(matchId);
+    if (!match) {
+      throw new Error('Match not found');
+    }
+
+    // Try to update existing prediction first
+    const { data: existing } = await supabase
+      .from('predictions')
+      .select('*')
+      .eq('league_id', leagueId)
+      .eq('user_id', userId)
+      .eq('match_id', matchId)
+      .single();
+
+    if (existing) {
+      // Update existing prediction
+      const { data, error } = await supabase
+        .from('predictions')
+        .update({
+          predicted_home_score: predictedHomeScore,
+          predicted_away_score: predictedAwayScore,
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } else {
+      // Create new prediction
+      const { data, error } = await supabase
+        .from('predictions')
+        .insert({
+          league_id: leagueId,
+          user_id: userId,
+          match_id: matchId,
+          predicted_home_score: predictedHomeScore,
+          predicted_away_score: predictedAwayScore,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  },
+
+  /**
    * Get user's predictions for a league
    */
   async getUserPredictions(leagueId: string, userId: string): Promise<PredictionWithMatch[]> {

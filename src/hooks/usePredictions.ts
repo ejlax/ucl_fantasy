@@ -71,6 +71,42 @@ export function useSavePrediction() {
 }
 
 /**
+ * Hook to save a prediction with admin override (bypasses lock check)
+ * Only league owners/commissioners should use this
+ */
+export function useSavePredictionAdminOverride() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      leagueId,
+      userId,
+      matchId,
+      predictedHomeScore,
+      predictedAwayScore,
+    }: {
+      leagueId: string;
+      userId: string;
+      matchId: string;
+      predictedHomeScore: number;
+      predictedAwayScore: number;
+    }) =>
+      predictionService.savePredictionAdminOverride(
+        leagueId,
+        userId,
+        matchId,
+        predictedHomeScore,
+        predictedAwayScore
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.PREDICTIONS, 'league', variables.leagueId],
+      });
+    },
+  });
+}
+
+/**
  * Hook to calculate match prediction points (admin only)
  */
 export function useCalculateMatchPredictionPoints() {

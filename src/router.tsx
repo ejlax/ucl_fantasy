@@ -6,6 +6,7 @@ import { JoinLeaguePage } from '@/pages/JoinLeaguePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { LeaguesPage } from '@/pages/LeaguesPage';
 import { LeagueDetailsPage } from '@/pages/LeagueDetailsPage';
+import { LeagueAdminPredictionsPage } from '@/pages/LeagueAdminPredictionsPage';
 import { BracketPage } from '@/pages/BracketPage';
 import { PredictionsPage } from '@/pages/PredictionsPage';
 import { StandingsPage } from '@/pages/StandingsPage';
@@ -57,6 +58,16 @@ export function Router() {
           <ProtectedRoute>
             <Layout>
               <LeagueDetailsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leagues/:leagueId/admin/predictions"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <LeagueAdminPredictionsPage />
             </Layout>
           </ProtectedRoute>
         }

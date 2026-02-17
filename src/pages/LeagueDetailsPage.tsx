@@ -14,6 +14,7 @@ import {
   Trash2,
   CheckCircle,
   Award,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeagueWithMembers, useLeaveLeague, useDeleteLeague } from '@/hooks/useLeagues';
@@ -168,6 +169,28 @@ export function LeagueDetailsPage() {
           </button>
         </div>
       </div>
+
+      {/* Admin Tools (Owner Only) */}
+      {isOwner && (
+        <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+              <Shield className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-gray-900 font-semibold">Admin Tools</h3>
+              <p className="text-gray-600 text-sm">Manage league settings and member predictions</p>
+            </div>
+          </div>
+          <Link
+            to={`/leagues/${leagueId}/admin/predictions`}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          >
+            <Shield size={18} />
+            <span>Manage Member Predictions</span>
+          </Link>
+        </div>
+      )}
 
       {/* League Settings */}
       {league.settings && Object.keys(league.settings).length > 0 && (
