@@ -7,6 +7,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { LeaguesPage } from '@/pages/LeaguesPage';
 import { LeagueDetailsPage } from '@/pages/LeagueDetailsPage';
 import { LeagueAdminPredictionsPage } from '@/pages/LeagueAdminPredictionsPage';
+import { LeaguePredictionsPage } from '@/pages/LeaguePredictionsPage';
 import { BracketPage } from '@/pages/BracketPage';
 import { PredictionsPage } from '@/pages/PredictionsPage';
 import { StandingsPage } from '@/pages/StandingsPage';
@@ -58,6 +59,16 @@ export function Router() {
           <ProtectedRoute>
             <Layout>
               <LeagueDetailsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leagues/:leagueId/predictions"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <LeaguePredictionsPage />
             </Layout>
           </ProtectedRoute>
         }

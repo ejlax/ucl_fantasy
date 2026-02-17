@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Award,
   Shield,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeagueWithMembers, useLeaveLeague, useDeleteLeague } from '@/hooks/useLeagues';
@@ -133,6 +134,13 @@ export function LeagueDetailsPage() {
 
           {/* Action Buttons */}
           <div className="flex gap-2">
+            <Link
+              to={`/leagues/${leagueId}/predictions`}
+              className="flex items-center gap-2 rounded-lg border border-primary-600 bg-white px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+            >
+              <Eye size={18} />
+              <span>View Predictions</span>
+            </Link>
             {!isOwner && (
               <button
                 onClick={handleLeaveLeague}
