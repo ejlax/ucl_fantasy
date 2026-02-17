@@ -75,6 +75,53 @@ export function AdminPage() {
     setEditScores({ home: '0', away: '0' });
   };
 
+  const handleRecalculateAllPoints = async () => {
+    if (!confirm('Recalculate points for ALL completed matches in ALL leagues?\n\nThis will update points_earned for all predictions.')) {
+      return;
+    }
+
+    try {
+      console.log('🔄 Recalculating all points...');
+
+      // Get all completed matches
+      const completedMatches = dbMatches.filter(m => m.is_completed);
+      console.log(`Found ${completedMatches.length} completed matches`);
+
+      let totalUpdated = 0;
+
+      for (const match of completedMatches) {
+        if (match.home_score === null || match.away_score === null) {
+          console.warn(`⚠️ Skipping match ${match.home_team} vs ${match.away_team} - no scores`);
+          continue;
+        }
+
+        for (const leagueId of leagueIds) {
+          try {
+            await predictionService.calculateMatchPredictionPoints(
+              leagueId,
+              match.id,
+              match.home_score,
+              match.away_score
+            );
+            totalUpdated++;
+            console.log(`✅ Recalculated: ${match.home_team} vs ${match.away_team} for league ${leagueId}`);
+          } catch (err) {
+            console.warn(`⚠️ Error for match ${match.id} in league ${leagueId}:`, err);
+          }
+        }
+      }
+
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PREDICTIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STANDINGS] });
+
+      alert(`✅ Recalculation complete!\n\nProcessed ${completedMatches.length} matches across ${leagueIds.length} league(s).\n\nCheck the standings page to see updated points.`);
+    } catch (error: any) {
+      console.error('Error recalculating points:', error);
+      alert(`❌ Failed to recalculate points\n\nError: ${error?.message || 'Unknown error'}`);
+    }
+  };
+
   const handleSaveScore = async (matchId: string) => {
     try {
       console.log('💾 Saving score for match ID:', matchId);
@@ -187,6 +234,13 @@ export function AdminPage() {
             >
               <RefreshCw className="h-4 w-4" />
               Refresh Data
+            </button>
+            <button
+              onClick={handleRecalculateAllPoints}
+              className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:bg-purple-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Recalculate All Points
             </button>
             <SyncMatchesButton leagueIds={leagueIds} variant="primary" size="md" />
           </div>
