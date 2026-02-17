@@ -3,7 +3,8 @@ import { Match } from '@/types/database';
 import { Alert } from '@/components/common';
 import { arePredictionsLocked, formatMatchDate } from '@/utils/dateUtils';
 import { getTeamLogo } from '@/utils/teamLogos';
-import { Lock, Check, Shield, Calendar, Clock, MapPin, Zap } from 'lucide-react';
+import { Lock, Check, Shield, Calendar, Clock, MapPin, Zap, Radio, ExternalLink } from 'lucide-react';
+import { useESPNLiveMatches } from '@/hooks/useESPNMatches';
 
 interface DynamicPredictionCardProps {
   match: Match;
@@ -40,6 +41,45 @@ export function DynamicPredictionCard({
   const isLocked = arePredictionsLocked(match.match_date);
   const isCompleted = match.is_completed;
   const hasActualScores = match.home_score !== null && match.away_score !== null;
+  const isLive = isLocked && !isCompleted && hasActualScores;
+
+  // Fetch ESPN live matches to get clock data
+  const { data: espnLiveMatches } = useESPNLiveMatches();
+
+  // Find matching ESPN match for clock display
+  // Try multiple matching strategies for better accuracy
+  const espnMatch = espnLiveMatches?.find((em) => {
+    const homeMatch =
+      em.homeTeam.displayName === match.home_team ||
+      em.homeTeam.name === match.home_team ||
+      em.homeTeam.displayName.includes(match.home_team) ||
+      match.home_team.includes(em.homeTeam.displayName) ||
+      em.homeTeam.abbreviation === match.home_team;
+
+    const awayMatch =
+      em.awayTeam.displayName === match.away_team ||
+      em.awayTeam.name === match.away_team ||
+      em.awayTeam.displayName.includes(match.away_team) ||
+      match.away_team.includes(em.awayTeam.displayName) ||
+      em.awayTeam.abbreviation === match.away_team;
+
+    return (homeMatch && awayMatch) || homeMatch || awayMatch;
+  });
+
+  const matchClock = espnMatch?.status.displayClock;
+
+  // Debug logging for match data
+  useEffect(() => {
+    console.log('🎯 DynamicPredictionCard render:', {
+      match: `${match.home_team} vs ${match.away_team}`,
+      dbScores: `${match.home_score} - ${match.away_score}`,
+      isLive,
+      isLocked,
+      isCompleted,
+      hasActualScores,
+      espnClock: matchClock,
+    });
+  }, [match, isLive, isLocked, isCompleted, hasActualScores, matchClock]);
 
   // Update the ref when onSubmit changes
   useEffect(() => {
@@ -117,7 +157,10 @@ export function DynamicPredictionCard({
   });
 
   return (
-    <div className="group relative h-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 shadow-2xl transition-all hover:-translate-y-1">
+    <div className={`group relative h-full overflow-hidden rounded-xl border bg-gray-100 shadow-2xl transition-all hover:-translate-y-1 ${isLive
+      ? 'border-2 border-green-500/60 shadow-lg'
+      : 'border border-gray-200'
+      }`}>
       {/* Dynamic Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" />
@@ -134,6 +177,24 @@ export function DynamicPredictionCard({
                 <span className="text-[10px] font-black tracking-[0.2em] text-green-600 uppercase">
                   Completed
                 </span>
+              </>
+            ) : isLive ? (
+              <>
+                <Radio className="h-3 w-3 animate-pulse text-green-600" />
+                <span className="text-[10px] font-black tracking-[0.2em] text-green-600 uppercase">
+                  Live
+                </span>
+                {matchClock && (
+                  <>
+                    <span className="text-[10px] text-slate-400">•</span>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-green-600" />
+                      <span className="font-mono text-[10px] font-bold text-green-600">
+                        {matchClock}
+                      </span>
+                    </div>
+                  </>
+                )}
               </>
             ) : isLocked ? (
               <>

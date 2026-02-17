@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { QUERY_KEYS } from '@/utils/constants';
+import { matchSyncService } from '@/services/matchSyncService';
+import { espnApiService } from '@/services/espnApiService';
 import type { Match } from '@/types/database';
 
 /**
@@ -31,12 +33,12 @@ export function useRealtimeMatches() {
         },
         (payload) => {
           console.log('⚡ Match updated via Realtime:', payload.new);
-          
+
           const updatedMatch = payload.new as Match;
 
           // Invalidate all match-related queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHES] });
-          
+
           // Optionally update the cache directly for instant UI update
           queryClient.setQueriesData<Match[]>(
             { queryKey: [QUERY_KEYS.MATCHES] },
@@ -88,10 +90,10 @@ export function useRealtimeStandings(leagueId?: string) {
         },
         (payload) => {
           console.log('⚡ Prediction updated via Realtime:', payload);
-          
+
           // Invalidate standings to trigger recalculation
-          queryClient.invalidateQueries({ 
-            queryKey: [QUERY_KEYS.STANDINGS, leagueId] 
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.STANDINGS, leagueId]
           });
         }
       )
@@ -110,7 +112,7 @@ export function useRealtimeStandings(leagueId?: string) {
 /**
  * Combined hook for live match experience
  * - Realtime WebSocket updates (instant)
- * - ESPN polling (every 10s during live matches)
+ * - ESPN polling and sync (every 10s during live matches)
  * - Auto-invalidates standings
  */
 export function useLiveMatchUpdates(leagueId?: string) {
@@ -121,23 +123,38 @@ export function useLiveMatchUpdates(leagueId?: string) {
   useRealtimeStandings(leagueId);
 
   useEffect(() => {
-    // Set up aggressive polling during live matches
-    const interval = setInterval(() => {
-      // Check if there are live matches
-      const liveMatches = queryClient.getQueryData<Match[]>([
-        QUERY_KEYS.MATCHES,
-      ]);
+    let isSyncing = false;
 
-      const hasLiveMatches = liveMatches?.some(
-        (match) => !match.is_completed && match.home_score !== null
-      );
+    // Set up aggressive polling and syncing during live matches
+    const interval = setInterval(async () => {
+      if (isSyncing) return; // Prevent concurrent syncs
 
-      if (hasLiveMatches) {
-        console.log('🔄 Polling for live match updates...');
-        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHES] });
-        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ESPN_MATCHES] });
+      isSyncing = true;
+
+      try {
+        // Check ESPN for live matches
+        const espnLiveMatches = await espnApiService.getLiveMatches();
+
+        if (espnLiveMatches.length > 0) {
+          console.log(`🔄 Found ${espnLiveMatches.length} live matches on ESPN, syncing to database...`);
+
+          // Sync live matches from ESPN to database
+          const updatedIds = await matchSyncService.syncLiveMatches();
+
+          if (updatedIds.length > 0) {
+            console.log(`✅ Updated ${updatedIds.length} matches in database`);
+
+            // Invalidate queries to trigger UI update
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHES] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ESPN_MATCHES] });
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error syncing live matches:', error);
+      } finally {
+        isSyncing = false;
       }
-    }, 10000); // Poll every 10 seconds
+    }, 10000); // Sync every 10 seconds
 
     return () => clearInterval(interval);
   }, [queryClient]);

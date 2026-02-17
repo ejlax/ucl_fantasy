@@ -5,17 +5,18 @@ import { QUERY_KEYS } from '@/utils/constants';
 
 /**
  * Hook to fetch live ESPN matches
- * Refetches every 30 seconds when there are live matches
+ * Refetches every 10 seconds when there are live matches
  */
 export function useESPNLiveMatches() {
   return useQuery({
     queryKey: [QUERY_KEYS.ESPN_MATCHES, 'live'],
     queryFn: () => espnApiService.getLiveMatches(),
     refetchInterval: (data) => {
-      // Refetch every 30 seconds if there are live matches
-      return data && data.length > 0 ? 30000 : false;
+      // Refetch every 10 seconds if there are live matches
+      return data && data.length > 0 ? 10000 : false;
     },
     refetchIntervalInBackground: true,
+    staleTime: 0, // Always consider data stale to ensure fresh updates
   });
 }
 

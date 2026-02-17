@@ -10,6 +10,7 @@ import { useMatchesGroupedByRound } from '@/hooks/useMatches';
 import { useUserPredictions, useSavePrediction } from '@/hooks/usePredictions';
 import { DynamicPredictionCard } from '@/components/predictions/DynamicPredictionCard';
 import { LiveMatchBanner } from '@/components/matches';
+import { useLiveMatchUpdates } from '@/hooks/useRealtimeMatches';
 import { Trophy, Calendar } from 'lucide-react';
 import { formatRoundName } from '@/utils/formatting';
 import type { Match } from '@/types/database';
@@ -25,6 +26,9 @@ export function PredictionsPage() {
     user?.id || ''
   );
   const savePrediction = useSavePrediction();
+
+  // Enable real-time updates for live matches
+  useLiveMatchUpdates(selectedLeagueId);
 
   // Set default league when leagues load
   if (leagues && leagues.length > 0 && !selectedLeagueId) {
