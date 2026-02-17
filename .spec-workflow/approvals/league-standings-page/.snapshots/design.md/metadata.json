@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/league-standings-page/design.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2026-02-04T15:41:26.455Z",
+      "trigger": "initial",
+      "approvalId": "approval_1770219686449_138ebtqvr",
+      "approvalTitle": "Design Document - League Standings Page"
+    }
+  ]
+}

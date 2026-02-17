@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/league-standings-page/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2026-02-04T15:39:35.543Z",
+      "trigger": "initial",
+      "approvalId": "approval_1770219575531_wy8uq4myu",
+      "approvalTitle": "Requirements Document - League Standings Page"
+    }
+  ]
+}

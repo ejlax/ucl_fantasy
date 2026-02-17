@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/league-standings-page/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2026-02-04T15:51:45.766Z",
+      "trigger": "initial",
+      "approvalId": "approval_1770220305765_5a46l1dpr",
+      "approvalTitle": "Tasks Document - League Standings Page"
+    }
+  ]
+}

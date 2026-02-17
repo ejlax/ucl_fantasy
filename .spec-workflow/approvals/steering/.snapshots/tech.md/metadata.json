@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/steering/tech.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2026-02-01T22:26:46.787Z",
+      "trigger": "initial",
+      "approvalId": "approval_1769984806779_ewguzffxa",
+      "approvalTitle": "Technology Stack Document (tech.md)"
+    }
+  ]
+}
