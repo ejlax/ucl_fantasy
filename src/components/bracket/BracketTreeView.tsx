@@ -95,14 +95,47 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
     const isLive = !!liveMatch;
     const liveClock = liveMatch?.status.displayClock;
 
+    // Calculate live aggregate scores
+    let team1LiveScore = tie.team1AggregateScore;
+    let team2LiveScore = tie.team2AggregateScore;
+
+    if (liveMatch) {
+      const leg1Match = tie.leg1Match;
+      const leg2Match = tie.leg2Match;
+
+      if (leg1Live && leg1Match) {
+        // Leg 1 is live - use live scores for leg 1, database scores for leg 2
+        const isTeam1Home = leg1Match.home_team === tie.team1;
+        const leg1Team1Score = isTeam1Home ? leg1Live.homeTeam.score : leg1Live.awayTeam.score;
+        const leg1Team2Score = isTeam1Home ? leg1Live.awayTeam.score : leg1Live.homeTeam.score;
+
+        const leg2Team1Score = leg2Match ? (leg2Match.home_team === tie.team1 ? leg2Match.home_score : leg2Match.away_score) : 0;
+        const leg2Team2Score = leg2Match ? (leg2Match.home_team === tie.team2 ? leg2Match.home_score : leg2Match.away_score) : 0;
+
+        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
+        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+      } else if (leg2Live && leg2Match) {
+        // Leg 2 is live - use database scores for leg 1, live scores for leg 2
+        const isTeam1Home = leg2Match.home_team === tie.team1;
+        const leg2Team1Score = isTeam1Home ? leg2Live.homeTeam.score : leg2Live.awayTeam.score;
+        const leg2Team2Score = isTeam1Home ? leg2Live.awayTeam.score : leg2Live.homeTeam.score;
+
+        const leg1Team1Score = leg1Match ? (leg1Match.home_team === tie.team1 ? leg1Match.home_score : leg1Match.away_score) : 0;
+        const leg1Team2Score = leg1Match ? (leg1Match.home_team === tie.team2 ? leg1Match.home_score : leg1Match.away_score) : 0;
+
+        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
+        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+      }
+    }
+
     return (
       <div
         key={tie.id}
         data-tie-id={tie.id}
         onClick={() => setSelectedTie(tie)}
         className={`rounded-xl bg-white cursor-pointer overflow-hidden transition-all hover:shadow-lg ${isLive
-            ? 'border-2 border-green-500/60 shadow-green-100'
-            : 'border-2 border-gray-300'
+          ? 'border-2 border-green-500/60 shadow-green-100'
+          : 'border-2 border-gray-300'
           } hover:border-gray-400 ${isCompact ? 'text-sm' : 'text-base'}`}
         style={{ minWidth: isCompact ? '180px' : '220px' }}
       >
@@ -144,8 +177,8 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
               {tie.team1}
             </span>
           </div>
-          <span className={`ml-3 text-lg font-bold tabular-nums ${team1IsWinner ? 'text-blue-600' : 'text-gray-400'}`}>
-            {tie.isCompleted ? tie.team1AggregateScore : '-'}
+          <span className={`ml-3 text-lg font-bold tabular-nums ${team1IsWinner ? 'text-blue-600' : isLive ? 'text-green-600' : 'text-gray-400'}`}>
+            {isLive || tie.isCompleted ? team1LiveScore : '-'}
           </span>
         </div>
 
@@ -168,8 +201,8 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
               {tie.team2}
             </span>
           </div>
-          <span className={`ml-3 text-lg font-bold tabular-nums ${team2IsWinner ? 'text-blue-600' : 'text-gray-400'}`}>
-            {tie.isCompleted ? tie.team2AggregateScore : '-'}
+          <span className={`ml-3 text-lg font-bold tabular-nums ${team2IsWinner ? 'text-blue-600' : isLive ? 'text-green-600' : 'text-gray-400'}`}>
+            {isLive || tie.isCompleted ? team2LiveScore : '-'}
           </span>
         </div>
       </div>

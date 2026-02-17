@@ -28,9 +28,16 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
   // Enable real-time updates
   useLiveMatchUpdates();
 
-  // Helper function to check if a tie has a live match
+  // Helper function to check if a tie has a live match and calculate live aggregate scores
   const getTieLiveStatus = (tie: Tie) => {
-    if (!espnLiveMatches || tie.isCompleted) return { isLive: false, clock: undefined };
+    if (!espnLiveMatches || tie.isCompleted) {
+      return {
+        isLive: false,
+        clock: undefined,
+        team1LiveScore: tie.team1AggregateScore,
+        team2LiveScore: tie.team2AggregateScore
+      };
+    }
 
     // Check if either leg is live
     const checkMatch = (match: Match | null) => {
@@ -52,9 +59,45 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
     const leg2Live = checkMatch(tie.leg2Match);
     const liveMatch = leg1Live || leg2Live;
 
+    // Calculate live aggregate scores
+    let team1LiveScore = tie.team1AggregateScore;
+    let team2LiveScore = tie.team2AggregateScore;
+
+    if (liveMatch) {
+      // Determine which team is which in the live match
+      const leg1Match = tie.leg1Match;
+      const leg2Match = tie.leg2Match;
+
+      if (leg1Live && leg1Match) {
+        // Leg 1 is live - use live scores for leg 1, database scores for leg 2
+        const isTeam1Home = leg1Match.home_team === tie.team1;
+        const leg1Team1Score = isTeam1Home ? leg1Live.homeTeam.score : leg1Live.awayTeam.score;
+        const leg1Team2Score = isTeam1Home ? leg1Live.awayTeam.score : leg1Live.homeTeam.score;
+
+        const leg2Team1Score = leg2Match ? (leg2Match.home_team === tie.team1 ? leg2Match.home_score : leg2Match.away_score) : 0;
+        const leg2Team2Score = leg2Match ? (leg2Match.home_team === tie.team2 ? leg2Match.home_score : leg2Match.away_score) : 0;
+
+        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
+        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+      } else if (leg2Live && leg2Match) {
+        // Leg 2 is live - use database scores for leg 1, live scores for leg 2
+        const isTeam1Home = leg2Match.home_team === tie.team1;
+        const leg2Team1Score = isTeam1Home ? leg2Live.homeTeam.score : leg2Live.awayTeam.score;
+        const leg2Team2Score = isTeam1Home ? leg2Live.awayTeam.score : leg2Live.homeTeam.score;
+
+        const leg1Team1Score = leg1Match ? (leg1Match.home_team === tie.team1 ? leg1Match.home_score : leg1Match.away_score) : 0;
+        const leg1Team2Score = leg1Match ? (leg1Match.home_team === tie.team2 ? leg1Match.home_score : leg1Match.away_score) : 0;
+
+        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
+        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+      }
+    }
+
     return {
       isLive: !!liveMatch,
-      clock: liveMatch?.status.displayClock
+      clock: liveMatch?.status.displayClock,
+      team1LiveScore,
+      team2LiveScore
     };
   };
 
@@ -119,19 +162,19 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                     const leg2Score = tie.leg2Match ? getLegScoreText(tie.leg2Match) : '0-0';
                     const leg1Date = formatDate(new Date(tie.firstLegDate), 'MMM d');
                     const leg2Date = tie.secondLegDate ? formatDate(new Date(tie.secondLegDate), 'MMM d') : '';
-                    const { isLive, clock } = getTieLiveStatus(tie);
+                    const { isLive, clock, team1LiveScore, team2LiveScore } = getTieLiveStatus(tie);
 
                     return (
                       <div key={tie.id} onClick={() => setSelectedTie(tie)}>
                         <SimplifiedDynamicCard
                           homeTeam={{
                             name: tie.team1,
-                            score: tie.team1AggregateScore,
+                            score: team1LiveScore,
                             isWinner: tie.winner === tie.team1,
                           }}
                           awayTeam={{
                             name: tie.team2,
-                            score: tie.team2AggregateScore,
+                            score: team2LiveScore,
                             isWinner: tie.winner === tie.team2,
                           }}
                           leg1Date={leg1Date}
@@ -155,19 +198,19 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                   const leg2Score = tie.leg2Match ? getLegScoreText(tie.leg2Match) : '0-0';
                   const leg1Date = formatDate(new Date(tie.firstLegDate), 'MMM d');
                   const leg2Date = tie.secondLegDate ? formatDate(new Date(tie.secondLegDate), 'MMM d') : '';
-                  const { isLive, clock } = getTieLiveStatus(tie);
+                  const { isLive, clock, team1LiveScore, team2LiveScore } = getTieLiveStatus(tie);
 
                   return (
                     <div key={tie.id} onClick={() => setSelectedTie(tie)}>
                       <SimplifiedDynamicCard
                         homeTeam={{
                           name: tie.team1,
-                          score: tie.team1AggregateScore,
+                          score: team1LiveScore,
                           isWinner: tie.winner === tie.team1,
                         }}
                         awayTeam={{
                           name: tie.team2,
-                          score: tie.team2AggregateScore,
+                          score: team2LiveScore,
                           isWinner: tie.winner === tie.team2,
                         }}
                         leg1Date={leg1Date}
