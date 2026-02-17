@@ -138,7 +138,7 @@ export function LeaguePredictionsPage() {
 interface MatchPredictionsCardProps {
   match: Match;
   predictions: Prediction[];
-  members: Array<{ user_id: string; display_name: string }>;
+  members: Array<{ user_id: string; user: { display_name: string } }>;
   isLive: boolean;
 }
 
@@ -260,7 +260,7 @@ function MatchPredictionsCard({ match, predictions, members, isLive }: MatchPred
                       : 'border-gray-200 bg-gray-50'
                     }`}
                 >
-                  <span className="font-medium text-gray-900">{member.display_name}</span>
+                  <span className="font-medium text-gray-900">{member.user.display_name}</span>
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-lg font-bold text-gray-900">
                       {prediction.predicted_home_score} - {prediction.predicted_away_score}
