@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { getTeamLogo } from '@/utils/teamLogos';
-import { Shield } from 'lucide-react';
+import { Shield, Radio, Clock } from 'lucide-react';
 
 interface SimplifiedDynamicCardProps {
     homeTeam: {
@@ -20,6 +20,8 @@ interface SimplifiedDynamicCardProps {
     leg1Score?: string;
     leg2Score?: string;
     status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+    isLive?: boolean;
+    liveClock?: string;
 }
 
 export const SimplifiedDynamicCard: FC<SimplifiedDynamicCardProps> = ({
@@ -30,12 +32,17 @@ export const SimplifiedDynamicCard: FC<SimplifiedDynamicCardProps> = ({
     leg1Score = '0-0',
     leg2Score = '0-0',
     status,
+    isLive = false,
+    liveClock,
 }) => {
     const homeLogo = getTeamLogo(homeTeam.name);
     const awayLogo = getTeamLogo(awayTeam.name);
 
     return (
-        <div className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <div className={`group relative overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5 ${isLive
+            ? 'border-2 border-green-500/60 shadow-green-100'
+            : 'border border-gray-200'
+            }`}>
             {/* Simple Dynamic Background - Light Mode Default as requested by 'simplified' often implying cleaner */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50 to-slate-100" />
@@ -45,9 +52,18 @@ export const SimplifiedDynamicCard: FC<SimplifiedDynamicCardProps> = ({
             <div className="relative z-10 flex flex-col h-full">
                 {/* Header */}
                 <div className="border-b border-gray-100 bg-white/50 px-4 py-2 text-center">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {status === 'COMPLETED' ? 'Final Score' : `Leg 1: ${leg1Date} • Leg 2: ${leg2Date}`}
-                    </span>
+                    {isLive ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                            <Radio size={12} className="text-green-600 animate-pulse" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-green-600">
+                                LIVE {liveClock && `• ${liveClock}`}
+                            </span>
+                        </div>
+                    ) : (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            {status === 'COMPLETED' ? 'Final Score' : `Leg 1: ${leg1Date} • Leg 2: ${leg2Date}`}
+                        </span>
+                    )}
                 </div>
 
                 {/* Content */}

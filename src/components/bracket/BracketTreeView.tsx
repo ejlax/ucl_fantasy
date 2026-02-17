@@ -7,9 +7,11 @@ import { useMemo, useRef, useEffect, useState } from 'react';
 import type { Match } from '@/types/database';
 import { groupMatchesIntoTies, type Tie } from '@/utils/tieUtils';
 import { formatRoundName } from '@/utils/formatting';
-import { Trophy, Shield } from 'lucide-react';
+import { Trophy, Shield, Radio } from 'lucide-react';
 import { MatchDetailsModal } from './MatchDetailsModal';
 import { getTeamLogo } from '@/utils/teamLogos';
+import { useESPNLiveMatches } from '@/hooks/useESPNMatches';
+import { useLiveMatchUpdates } from '@/hooks/useRealtimeMatches';
 
 interface BracketTreeViewProps {
   matches: Match[];
@@ -19,6 +21,10 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [tiePositions, setTiePositions] = useState<Map<string, DOMRect>>(new Map());
   const [selectedTie, setSelectedTie] = useState<Tie | null>(null);
+  const { data: espnLiveMatches } = useESPNLiveMatches();
+
+  // Enable real-time updates
+  useLiveMatchUpdates();
 
   // Group matches into ties
   const tiesByRound = useMemo(() => {
@@ -67,17 +73,49 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
     const team1Logo = getTeamLogo(tie.team1);
     const team2Logo = getTeamLogo(tie.team2);
 
+    // Check if tie is live
+    const checkMatch = (match: Match | null) => {
+      if (!match || !espnLiveMatches) return null;
+      return espnLiveMatches.find((em) => {
+        const homeMatch = em.homeTeam.displayName === match.home_team ||
+          em.homeTeam.name === match.home_team ||
+          em.homeTeam.displayName.includes(match.home_team) ||
+          match.home_team.includes(em.homeTeam.displayName);
+        const awayMatch = em.awayTeam.displayName === match.away_team ||
+          em.awayTeam.name === match.away_team ||
+          em.awayTeam.displayName.includes(match.away_team) ||
+          match.away_team.includes(em.awayTeam.displayName);
+        return homeMatch && awayMatch;
+      });
+    };
+
+    const leg1Live = checkMatch(tie.leg1Match);
+    const leg2Live = checkMatch(tie.leg2Match);
+    const liveMatch = leg1Live || leg2Live;
+    const isLive = !!liveMatch;
+    const liveClock = liveMatch?.status.displayClock;
+
     return (
       <div
         key={tie.id}
         data-tie-id={tie.id}
         onClick={() => setSelectedTie(tie)}
-        className={`rounded-xl border-2 border-gray-300 bg-white cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:border-gray-400 ${isCompact ? 'text-sm' : 'text-base'}`}
+        className={`rounded-xl bg-white cursor-pointer overflow-hidden transition-all hover:shadow-lg ${isLive
+            ? 'border-2 border-green-500/60 shadow-green-100'
+            : 'border-2 border-gray-300'
+          } hover:border-gray-400 ${isCompact ? 'text-sm' : 'text-base'}`}
         style={{ minWidth: isCompact ? '180px' : '220px' }}
       >
         {/* Match header */}
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 text-center">
-          {isFinal ? (
+          {isLive ? (
+            <div className="flex items-center justify-center gap-1.5">
+              <Radio size={14} className="text-green-600 animate-pulse" />
+              <span className="text-sm font-medium text-green-600">
+                LIVE {liveClock && `• ${liveClock}`}
+              </span>
+            </div>
+          ) : isFinal ? (
             <div className="flex items-center justify-center gap-1.5">
               <Trophy size={14} className="text-gray-500" />
               <span className="text-sm font-medium text-gray-600">Final</span>

@@ -10,6 +10,8 @@ import { SimplifiedDynamicCard } from '@/components/design/matchup/SimplifiedDyn
 import { formatRoundName } from '@/utils/formatting';
 import { formatDate } from '@/utils/dateUtils';
 import { MatchDetailsModal } from './MatchDetailsModal';
+import { useESPNLiveMatches } from '@/hooks/useESPNMatches';
+import { useLiveMatchUpdates } from '@/hooks/useRealtimeMatches';
 
 interface TournamentBracketProps {
   matches: Match[];
@@ -21,6 +23,40 @@ interface TournamentBracketProps {
  */
 export function TournamentBracket({ matches }: TournamentBracketProps) {
   const [selectedTie, setSelectedTie] = useState<Tie | null>(null);
+  const { data: espnLiveMatches } = useESPNLiveMatches();
+
+  // Enable real-time updates
+  useLiveMatchUpdates();
+
+  // Helper function to check if a tie has a live match
+  const getTieLiveStatus = (tie: Tie) => {
+    if (!espnLiveMatches || tie.isCompleted) return { isLive: false, clock: undefined };
+
+    // Check if either leg is live
+    const checkMatch = (match: Match | null) => {
+      if (!match) return null;
+      return espnLiveMatches.find((em) => {
+        const homeMatch = em.homeTeam.displayName === match.home_team ||
+          em.homeTeam.name === match.home_team ||
+          em.homeTeam.displayName.includes(match.home_team) ||
+          match.home_team.includes(em.homeTeam.displayName);
+        const awayMatch = em.awayTeam.displayName === match.away_team ||
+          em.awayTeam.name === match.away_team ||
+          em.awayTeam.displayName.includes(match.away_team) ||
+          match.away_team.includes(em.awayTeam.displayName);
+        return homeMatch && awayMatch;
+      });
+    };
+
+    const leg1Live = checkMatch(tie.leg1Match);
+    const leg2Live = checkMatch(tie.leg2Match);
+    const liveMatch = leg1Live || leg2Live;
+
+    return {
+      isLive: !!liveMatch,
+      clock: liveMatch?.status.displayClock
+    };
+  };
 
   // Group matches into ties with aggregate scoring
   const tiesByRound = useMemo(() => {
@@ -83,6 +119,7 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                     const leg2Score = tie.leg2Match ? getLegScoreText(tie.leg2Match) : '0-0';
                     const leg1Date = formatDate(new Date(tie.firstLegDate), 'MMM d');
                     const leg2Date = tie.secondLegDate ? formatDate(new Date(tie.secondLegDate), 'MMM d') : '';
+                    const { isLive, clock } = getTieLiveStatus(tie);
 
                     return (
                       <div key={tie.id} onClick={() => setSelectedTie(tie)}>
@@ -102,6 +139,8 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                           leg1Score={leg1Score}
                           leg2Score={leg2Score}
                           status={tie.isCompleted ? 'COMPLETED' : 'SCHEDULED'}
+                          isLive={isLive}
+                          liveClock={clock}
                         />
                       </div>
                     );
@@ -116,6 +155,7 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                   const leg2Score = tie.leg2Match ? getLegScoreText(tie.leg2Match) : '0-0';
                   const leg1Date = formatDate(new Date(tie.firstLegDate), 'MMM d');
                   const leg2Date = tie.secondLegDate ? formatDate(new Date(tie.secondLegDate), 'MMM d') : '';
+                  const { isLive, clock } = getTieLiveStatus(tie);
 
                   return (
                     <div key={tie.id} onClick={() => setSelectedTie(tie)}>
@@ -135,6 +175,8 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
                         leg1Score={leg1Score}
                         leg2Score={leg2Score}
                         status={tie.isCompleted ? 'COMPLETED' : 'SCHEDULED'}
+                        isLive={isLive}
+                        liveClock={clock}
                       />
                     </div>
                   );
