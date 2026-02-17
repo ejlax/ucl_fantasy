@@ -17,6 +17,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { AdminPage } from '@/pages/AdminPage';
 import { TestLivePage } from '@/pages/TestLivePage';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { AdminRoute } from '@/components/common/AdminRoute';
 import { Layout } from '@/components/layout/Layout';
 import { MatchupDesignPage } from '@/pages/design/MatchupDesignPage';
 import { BracketDesignPage } from '@/pages/design/BracketDesignPage';
@@ -146,9 +147,9 @@ export function Router() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route

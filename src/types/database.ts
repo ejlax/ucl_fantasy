@@ -81,6 +81,23 @@ export interface Database {
           joined_at?: string;
         };
       };
+      admins: {
+        Row: {
+          id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+      };
       matches: {
         Row: {
           id: string;
@@ -177,6 +194,7 @@ export interface Database {
 export type User = Database['public']['Tables']['users']['Row'];
 export type League = Database['public']['Tables']['leagues']['Row'];
 export type LeagueMember = Database['public']['Tables']['league_members']['Row'];
+export type Admin = Database['public']['Tables']['admins']['Row'];
 export type Match = Database['public']['Tables']['matches']['Row'];
 export type Prediction = Database['public']['Tables']['predictions']['Row'];
 

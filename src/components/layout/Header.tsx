@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Menu, X, User, LogOut, Settings, Shield, Radio } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 export function Header() {
   const { user, signOut, isAuthenticated } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
@@ -86,14 +88,16 @@ export function Header() {
                           <Settings className="h-4 w-4" />
                           Settings
                         </Link>
-                        <Link
-                          to="/admin"
-                          className="text-secondary-700 hover:bg-secondary-100 flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                          onClick={() => setProfileMenuOpen(false)}
-                        >
-                          <Shield className="h-4 w-4" />
-                          Admin Panel
-                        </Link>
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            className="text-secondary-700 hover:bg-secondary-100 flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+                            onClick={() => setProfileMenuOpen(false)}
+                          >
+                            <Shield className="h-4 w-4" />
+                            Admin Panel
+                          </Link>
+                        )}
                         <hr className="border-secondary-200 my-2" />
                         <button
                           onClick={() => {
