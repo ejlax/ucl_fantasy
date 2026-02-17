@@ -3,6 +3,17 @@ import { predictionService } from '@/services/predictionService';
 import { QUERY_KEYS } from '@/utils/constants';
 
 /**
+ * Hook to fetch all predictions for a league (all users, all matches)
+ */
+export function useLeaguePredictions(leagueId: string) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.PREDICTIONS, 'league', leagueId, 'all'],
+    queryFn: () => predictionService.getLeaguePredictions(leagueId),
+    enabled: !!leagueId,
+  });
+}
+
+/**
  * Hook to fetch user's predictions for a league
  */
 export function useUserPredictions(leagueId: string, userId: string) {

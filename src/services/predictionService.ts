@@ -148,6 +148,20 @@ export const predictionService = {
   },
 
   /**
+   * Get all predictions for a league (all users, all matches)
+   */
+  async getLeaguePredictions(leagueId: string): Promise<Prediction[]> {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('*')
+      .eq('league_id', leagueId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
    * Get all predictions for a match in a league
    */
   async getMatchPredictions(leagueId: string, matchId: string): Promise<Prediction[]> {

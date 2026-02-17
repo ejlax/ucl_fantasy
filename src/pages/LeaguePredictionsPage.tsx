@@ -9,7 +9,7 @@ import { ArrowLeft, Trophy, Radio, CheckCircle2, Clock, Shield } from 'lucide-re
 import { useAuth } from '@/hooks/useAuth';
 import { useLeagueWithMembers } from '@/hooks/useLeagues';
 import { useMatches } from '@/hooks/useMatches';
-import { usePredictionsByLeague } from '@/hooks/usePredictions';
+import { useLeaguePredictions } from '@/hooks/usePredictions';
 import { useESPNLiveMatches } from '@/hooks/useESPNMatches';
 import { getTeamLogo } from '@/utils/teamLogos';
 import { formatDate } from '@/utils/dateUtils';
@@ -20,7 +20,7 @@ export function LeaguePredictionsPage() {
   const { user } = useAuth();
   const { data: league, isLoading: leagueLoading } = useLeagueWithMembers(leagueId || '');
   const { data: matches, isLoading: matchesLoading } = useMatches();
-  const { data: predictions, isLoading: predictionsLoading } = usePredictionsByLeague(leagueId || '');
+  const { data: predictions, isLoading: predictionsLoading } = useLeaguePredictions(leagueId || '');
   const { data: espnLiveMatches } = useESPNLiveMatches();
 
   const isLoading = leagueLoading || matchesLoading || predictionsLoading;
@@ -155,10 +155,10 @@ function MatchPredictionsCard({ match, predictions, members, isLive }: MatchPred
   return (
     <div
       className={`rounded-xl border-2 bg-white shadow-sm transition-all ${isLive
-          ? 'border-red-500 shadow-red-100'
-          : match.is_completed
-            ? 'border-green-500 shadow-green-100'
-            : 'border-gray-200'
+        ? 'border-red-500 shadow-red-100'
+        : match.is_completed
+          ? 'border-green-500 shadow-green-100'
+          : 'border-gray-200'
         }`}
     >
       {/* Match Header */}
@@ -254,10 +254,10 @@ function MatchPredictionsCard({ match, predictions, members, isLive }: MatchPred
                 <div
                   key={member.user_id}
                   className={`flex items-center justify-between rounded-lg border p-3 ${isExact
-                      ? 'border-green-300 bg-green-50'
-                      : isCorrectResult
-                        ? 'border-blue-300 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50'
+                    ? 'border-green-300 bg-green-50'
+                    : isCorrectResult
+                      ? 'border-blue-300 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50'
                     }`}
                 >
                   <span className="font-medium text-gray-900">{member.display_name}</span>
@@ -268,10 +268,10 @@ function MatchPredictionsCard({ match, predictions, members, isLive }: MatchPred
                     {match.is_completed && (
                       <span
                         className={`text-xs font-semibold ${isExact
-                            ? 'text-green-700'
-                            : isCorrectResult
-                              ? 'text-blue-700'
-                              : 'text-gray-500'
+                          ? 'text-green-700'
+                          : isCorrectResult
+                            ? 'text-blue-700'
+                            : 'text-gray-500'
                           }`}
                       >
                         {isExact
