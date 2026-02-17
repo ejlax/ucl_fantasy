@@ -106,25 +106,25 @@ export function BracketTreeView({ matches }: BracketTreeViewProps) {
       if (leg1Live && leg1Match) {
         // Leg 1 is live - use live scores for leg 1, database scores for leg 2
         const isTeam1Home = leg1Match.home_team === tie.team1;
-        const leg1Team1Score = isTeam1Home ? leg1Live.homeTeam.score : leg1Live.awayTeam.score;
-        const leg1Team2Score = isTeam1Home ? leg1Live.awayTeam.score : leg1Live.homeTeam.score;
+        const leg1Team1Score = Number(isTeam1Home ? leg1Live.homeTeam.score : leg1Live.awayTeam.score) || 0;
+        const leg1Team2Score = Number(isTeam1Home ? leg1Live.awayTeam.score : leg1Live.homeTeam.score) || 0;
 
-        const leg2Team1Score = leg2Match ? (leg2Match.home_team === tie.team1 ? leg2Match.home_score : leg2Match.away_score) : 0;
-        const leg2Team2Score = leg2Match ? (leg2Match.home_team === tie.team2 ? leg2Match.home_score : leg2Match.away_score) : 0;
+        const leg2Team1Score = leg2Match ? (Number(leg2Match.home_team === tie.team1 ? leg2Match.home_score : leg2Match.away_score) || 0) : 0;
+        const leg2Team2Score = leg2Match ? (Number(leg2Match.home_team === tie.team2 ? leg2Match.home_score : leg2Match.away_score) || 0) : 0;
 
-        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
-        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+        team1LiveScore = leg1Team1Score + leg2Team1Score;
+        team2LiveScore = leg1Team2Score + leg2Team2Score;
       } else if (leg2Live && leg2Match) {
         // Leg 2 is live - use database scores for leg 1, live scores for leg 2
         const isTeam1Home = leg2Match.home_team === tie.team1;
-        const leg2Team1Score = isTeam1Home ? leg2Live.homeTeam.score : leg2Live.awayTeam.score;
-        const leg2Team2Score = isTeam1Home ? leg2Live.awayTeam.score : leg2Live.homeTeam.score;
+        const leg2Team1Score = Number(isTeam1Home ? leg2Live.homeTeam.score : leg2Live.awayTeam.score) || 0;
+        const leg2Team2Score = Number(isTeam1Home ? leg2Live.awayTeam.score : leg2Live.homeTeam.score) || 0;
 
-        const leg1Team1Score = leg1Match ? (leg1Match.home_team === tie.team1 ? leg1Match.home_score : leg1Match.away_score) : 0;
-        const leg1Team2Score = leg1Match ? (leg1Match.home_team === tie.team2 ? leg1Match.home_score : leg1Match.away_score) : 0;
+        const leg1Team1Score = leg1Match ? (Number(leg1Match.home_team === tie.team1 ? leg1Match.home_score : leg1Match.away_score) || 0) : 0;
+        const leg1Team2Score = leg1Match ? (Number(leg1Match.home_team === tie.team2 ? leg1Match.home_score : leg1Match.away_score) || 0) : 0;
 
-        team1LiveScore = (leg1Team1Score || 0) + (leg2Team1Score || 0);
-        team2LiveScore = (leg1Team2Score || 0) + (leg2Team2Score || 0);
+        team1LiveScore = leg1Team1Score + leg2Team1Score;
+        team2LiveScore = leg1Team2Score + leg2Team2Score;
       }
     }
 
