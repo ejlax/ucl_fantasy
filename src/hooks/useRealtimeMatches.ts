@@ -3,7 +3,7 @@
  * Provides instant updates when match scores change in the database
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { QUERY_KEYS } from '@/utils/constants';
@@ -117,46 +117,90 @@ export function useRealtimeStandings(leagueId?: string) {
  */
 export function useLiveMatchUpdates(leagueId?: string) {
   const queryClient = useQueryClient();
+  const [allLeagueIds, setAllLeagueIds] = useState<string[]>([]);
 
   // Enable Realtime subscriptions
   useRealtimeMatches();
   useRealtimeStandings(leagueId);
 
+  // Fetch all league IDs once for points calculation
+  useEffect(() => {
+    async function fetchLeagueIds() {
+      try {
+        const { data: leagues } = await supabase
+          .from('leagues')
+          .select('id');
+
+        if (leagues) {
+          setAllLeagueIds(leagues.map(l => l.id));
+        }
+      } catch (error) {
+        console.error('Error fetching league IDs:', error);
+      }
+    }
+
+    fetchLeagueIds();
+  }, []);
+
   useEffect(() => {
     let isSyncing = false;
 
-    // Set up aggressive polling and syncing during live matches
+    // Set up aggressive polling and syncing during live/completed matches
     const interval = setInterval(async () => {
       if (isSyncing) return; // Prevent concurrent syncs
 
       isSyncing = true;
 
       try {
-        // Check ESPN for live matches
+        // Check ESPN for live and completed matches
         const espnLiveMatches = await espnApiService.getLiveMatches();
+        const espnCompletedMatches = await espnApiService.getCompletedMatches();
 
+        let totalUpdated = 0;
+
+        // Sync live matches
         if (espnLiveMatches.length > 0) {
-          console.log(`🔄 Found ${espnLiveMatches.length} live matches on ESPN, syncing to database...`);
+          console.log(`🔴 Found ${espnLiveMatches.length} live matches on ESPN, syncing scores...`);
+          const liveUpdatedIds = await matchSyncService.syncLiveMatches();
+          totalUpdated += liveUpdatedIds.length;
+        }
 
-          // Sync live matches from ESPN to database
-          const updatedIds = await matchSyncService.syncLiveMatches();
+        // Sync completed matches (mark as completed and calculate points)
+        if (espnCompletedMatches.length > 0) {
+          console.log(`✅ Found ${espnCompletedMatches.length} completed matches on ESPN, marking as complete...`);
+          const completedUpdatedIds = await matchSyncService.syncCompletedMatches();
 
-          if (updatedIds.length > 0) {
-            console.log(`✅ Updated ${updatedIds.length} matches in database`);
+          if (completedUpdatedIds.length > 0) {
+            console.log(`🎯 ${completedUpdatedIds.length} matches marked as completed, calculating points...`);
 
-            // Invalidate queries to trigger UI update
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHES] });
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ESPN_MATCHES] });
+            // Calculate points for ALL leagues
+            if (allLeagueIds.length > 0) {
+              await matchSyncService.calculatePointsForCompletedMatches(allLeagueIds);
+              console.log(`📊 Points calculated for ${allLeagueIds.length} league(s)`);
+
+              // Invalidate standings to show updated points
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STANDINGS] });
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PREDICTIONS] });
+            }
+
+            totalUpdated += completedUpdatedIds.length;
           }
         }
+
+        // Invalidate queries if anything was updated
+        if (totalUpdated > 0) {
+          console.log(`✅ Total ${totalUpdated} matches synced from ESPN`);
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHES] });
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ESPN_MATCHES] });
+        }
       } catch (error) {
-        console.error('❌ Error syncing live matches:', error);
+        console.error('❌ Error syncing matches:', error);
       } finally {
         isSyncing = false;
       }
     }, 10000); // Sync every 10 seconds
 
     return () => clearInterval(interval);
-  }, [queryClient]);
+  }, [queryClient, allLeagueIds]);
 }
 
