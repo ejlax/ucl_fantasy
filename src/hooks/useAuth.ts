@@ -28,20 +28,20 @@ export function useAuth() {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, password: string, displayName: string, returnTo?: string) => {
     try {
       await authService.signUp({ email, password, displayName });
-      navigate('/dashboard');
+      navigate(returnTo || '/dashboard');
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, returnTo?: string) => {
     try {
       await authService.signIn({ email, password });
-      navigate('/dashboard');
+      navigate(returnTo || '/dashboard');
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;

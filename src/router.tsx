@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { SignupPage } from '@/pages/SignupPage';
+import { JoinLeaguePage } from '@/pages/JoinLeaguePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { LeaguesPage } from '@/pages/LeaguesPage';
 import { LeagueDetailsPage } from '@/pages/LeagueDetailsPage';
@@ -25,6 +26,7 @@ export function Router() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/join/:inviteCode" element={<JoinLeaguePage />} />
       <Route path="/design/matchup" element={<MatchupDesignPage />} />
       <Route path="/design/bracket-list" element={<BracketDesignPage />} />
 
