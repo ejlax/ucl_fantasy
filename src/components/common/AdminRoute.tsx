@@ -11,8 +11,11 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
 
+  console.log('🛡️ AdminRoute:', { user: user?.id, loading, isAdmin, isAdminLoading });
+
   // Show loading state while checking auth and admin status
   if (loading || isAdminLoading) {
+    console.log('⏳ AdminRoute: Loading...');
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -25,14 +28,17 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
 
   // Redirect to login if not authenticated
   if (!user) {
+    console.log('🚫 AdminRoute: No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   // Redirect to dashboard if not an admin
   if (!isAdmin) {
+    console.log('🚫 AdminRoute: User is not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('✅ AdminRoute: User is admin, rendering admin page');
   return <>{children}</>;
 }
 
