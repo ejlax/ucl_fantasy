@@ -298,6 +298,11 @@ export const espnApiService = {
       Shakhtar: 'Shakhtar Donetsk',
       'Athletic Club': 'Athletic Club',
       Athletic: 'Athletic Club',
+      // Bodø/Glimt variations (special ø character)
+      'Bodø/Glimt': 'Bodø/Glimt',
+      'Bodo/Glimt': 'Bodø/Glimt',
+      'FK Bodo/Glimt': 'Bodø/Glimt',
+      'Bodoe/Glimt': 'Bodø/Glimt',
     };
 
     return nameMap[espnTeamName] || espnTeamName;
