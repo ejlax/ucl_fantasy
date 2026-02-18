@@ -68,22 +68,46 @@ export const matchSyncService = {
     const espnMatches = await espnApiService.getLiveMatches();
     const updatedMatchIds: string[] = [];
 
+    console.log(`🔍 syncLiveMatches: Processing ${espnMatches.length} live matches`);
+
     for (const espnMatch of espnMatches) {
       try {
+        // Log raw ESPN data
+        console.log(`📡 ESPN Raw Data:`, {
+          homeTeamRaw: espnMatch.homeTeam.displayName,
+          awayTeamRaw: espnMatch.awayTeam.displayName,
+          homeScoreRaw: espnMatch.homeTeam.score,
+          awayScoreRaw: espnMatch.awayTeam.score,
+          status: espnMatch.status,
+        });
+
         const homeTeam = espnApiService.mapTeamName(espnMatch.homeTeam.displayName);
         const awayTeam = espnApiService.mapTeamName(espnMatch.awayTeam.displayName);
 
-        const { data: dbMatches } = await supabase
+        console.log(`🗺️ Mapped team names: "${homeTeam}" vs "${awayTeam}"`);
+
+        const { data: dbMatches, error: dbError } = await supabase
           .from('matches')
           .select('*')
           .eq('home_team', homeTeam)
           .eq('away_team', awayTeam);
 
-        if (!dbMatches || dbMatches.length === 0) continue;
+        console.log(`🔎 Database query result:`, {
+          found: dbMatches?.length || 0,
+          error: dbError,
+          matches: dbMatches
+        });
+
+        if (!dbMatches || dbMatches.length === 0) {
+          console.log(`⚠️ No matching match found in DB for: "${homeTeam}" vs "${awayTeam}"`);
+          continue;
+        }
 
         const dbMatch = dbMatches[0];
         const homeScore = parseInt(espnMatch.homeTeam.score || '0');
         const awayScore = parseInt(espnMatch.awayTeam.score || '0');
+
+        console.log(`📊 Updating score: ${homeScore}-${awayScore} for match ${dbMatch.id}`);
 
         // Update score but don't mark as completed yet
         await matchService.updateMatchScore(dbMatch.id, homeScore, awayScore, false);
