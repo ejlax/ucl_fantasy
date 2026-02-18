@@ -9,9 +9,16 @@ import { useIsAdmin } from '@/hooks/useIsAdmin';
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const adminQuery = useIsAdmin();
+  const { data: isAdmin, isLoading: isAdminLoading } = adminQuery;
 
-  console.log('🛡️ AdminRoute:', { user: user?.id, loading, isAdmin, isAdminLoading });
+  console.log('🛡️ AdminRoute:', {
+    user: user?.id,
+    loading,
+    isAdmin,
+    isAdminLoading,
+    fullQuery: adminQuery
+  });
 
   // Show loading state while checking auth and admin status
   if (loading || isAdminLoading) {
