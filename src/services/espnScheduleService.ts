@@ -9,12 +9,13 @@ import type { Match } from '@/types/database';
 const ESPN_API_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions';
 
 // Map ESPN round types to our database rounds
+// ESPN season type IDs for UCL 2025-26 knockout stages
 const ROUND_MAPPING: Record<number, string> = {
+  13680: 'R16',     // Round of 16
   13681: 'PLAYOFF', // Knockout Round Playoffs
-  13682: 'R16',     // Round of 16
-  13683: 'QF',      // Quarter Finals
-  13684: 'SF',      // Semi Finals
-  13685: 'FINAL',   // Final
+  13682: 'QF',      // Quarter Finals
+  13683: 'SF',      // Semi Finals
+  13684: 'FINAL',   // Final
 };
 
 interface ESPNTeam {
@@ -54,13 +55,13 @@ export const espnScheduleService = {
    */
   async fetchSchedule(startDate: string, endDate: string): Promise<ESPNMatch[]> {
     const url = `${ESPN_API_BASE}/scoreboard?dates=${startDate}-${endDate}`;
-    
+
     try {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`ESPN API error: ${response.status}`);
       }
-      
+
       const data: ESPNScheduleResponse = await response.json();
       return data.events || [];
     } catch (error) {
@@ -79,7 +80,7 @@ export const espnScheduleService = {
   }> {
     // Fetch ESPN schedule
     const espnMatches = await this.fetchSchedule(startDate, endDate);
-    
+
     const updatedMatches: Match[] = [];
     let updateCount = 0;
 
