@@ -25,10 +25,15 @@ export const TEAM_LOGOS: Record<string, string> = {
   'Atletico Madrid': 'https://a.espncdn.com/i/teamlogos/soccer/500/1068.png',
   'Atlético Madrid': 'https://a.espncdn.com/i/teamlogos/soccer/500/1068.png',
 
+  // Bodo/Glimt alternate spelling (ESPN uses this format)
+  'Bodo/Glimt': 'https://a.espncdn.com/i/teamlogos/soccer/500/2980.png',
+
   // Other Top European Teams
   'Manchester City': 'https://a.espncdn.com/i/teamlogos/soccer/500/382.png',
   Liverpool: 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png',
   Arsenal: 'https://a.espncdn.com/i/teamlogos/soccer/500/359.png',
+  Chelsea: 'https://a.espncdn.com/i/teamlogos/soccer/500/363.png',
+  'Tottenham Hotspur': 'https://a.espncdn.com/i/teamlogos/soccer/500/367.png',
   'Aston Villa': 'https://a.espncdn.com/i/teamlogos/soccer/500/362.png',
   Barcelona: 'https://a.espncdn.com/i/teamlogos/soccer/500/83.png',
   Girona: 'https://a.espncdn.com/i/teamlogos/soccer/500/3747.png',
